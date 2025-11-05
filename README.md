@@ -1,178 +1,126 @@
-# Документація Texture API
+# Texture API Documentation
 
-Це REST API для керування цифровими текстурами та їхніми категоріями. API надає публічний доступ для читання даних та захищений доступ для створення, зміни та видалення даних.
+This is a REST API for managing digital textures and their categories. The API provides public access for reading data and protected access for creating, modifying, and deleting data.
 
-**Базовий URL:** `http://localhost:3000` (для локальної розробки)
+**Base URL:** `http://localhost:3000` (for local development)
 
-## Аутентифікація
+## Authentication
 
-Для виконання захищених дій (створення, оновлення, видалення) необхідно передавати секретний ключ у заголовках (headers) кожного запиту. Публічні маршрути для отримання даних не вимагають аутентифікації.
+To perform protected actions (create, update, delete), you must pass a secret key in the headers of each request. Public routes for fetching data do not require authentication.
 
-- **Тип:** API Key
-- **Ім'я заголовка:** `X-API-Key`
-- **Значення:** Ваш секретний ключ із змінної оточення `API_SECRET_KEY`.
+- **Type:** API Key
+- **Header Name:** `X-API-Key`
+- **Value:** Your secret key from the `API_SECRET_KEY` environment variable.
 
 ---
 
-## Маршрути (Endpoints)
+## Endpoints
 
-### Категорії (Categories)
+### Categories
 
 #### `GET /categories`
 
-Отримує список усіх доступних категорій.
+Retrieves a list of all available categories.
 
-- **Доступ:** Публічний
-- **Успішна відповідь (`200 OK`):**
+- **Access:** Public
+- **Successful Response (`200 OK`):** Returns an array of category objects.
+
+#### `GET /categories/:categoryId`
+
+Retrieves a single category by its unique ID.
+
+- **Access:** Public
+- **Successful Response (`200 OK`):** Returns a single category object.
+
+#### `POST /categories`
+
+Creates a new category.
+
+- **Access:** **Protected (`X-API-Key` is required)**
+- **Request Body:**
   ```json
   {
-    "status": 200,
-    "message": "Successfully found categories!",
-    "data": [
-      {
-        "_id": "690b29a3f88b1ba42d4e22b7",
-        "categoryName": "wood",
-        "createdAt": "...",
-        "updatedAt": "..."
-      },
-      {
-        "_id": "690b2b2af88b1ba42d4e22bb",
-        "categoryName": "leather",
-        "createdAt": "...",
-        "updatedAt": "..."
-      }
-    ]
+    "categoryName": "New Category"
   }
   ```
+- **Successful Response (`201 Created`):** Returns the full object of the newly created category.
+
+#### `PATCH /categories/:categoryId`
+
+Partially updates an existing category by its ID.
+
+- **Access:** **Protected (`X-API-Key` is required)**
+- **Request Body:**
+  ```json
+  {
+    "categoryName": "Updated Category Name"
+  }
+  ```
+- **Successful Response (`200 OK`):** Returns the full, **updated** category object.
+
+#### `DELETE /categories/:categoryId`
+
+Deletes a category by its ID.
+
+- **Access:** **Protected (`X-API-Key` is required)**
+- **Successful Response (`204 No Content`):** Returns an empty response.
 
 ---
 
-### Текстури (Textures)
+### Textures
 
 #### `GET /textures`
 
-Отримує список усіх текстур з підтримкою фільтрації, сортування та пагінації.
+Retrieves a list of all textures with support for filtering, sorting, and pagination.
 
-- **Доступ:** Публічний
-- **Query-параметри (опціонально):**
-  - `categoryId` (string): Фільтрує текстури за ID категорії.
-    - Приклад: `/textures?categoryId=690b29a3f88b1ba42d4e22b7`
-  - `page` (number): Номер сторінки для пагінації (за замовчуванням `1`).
-  - `perPage` (number): Кількість елементів на сторінці (за замовчуванням `10`).
-  - `sortBy` (string): Поле для сортування. Доступні значення: `_id`, `textureName`, `createdAt`. (За замовчуванням `_id`).
-  - `sortOrder` (string): Порядок сортування. Доступні значення: `asc`, `desc`. (За замовчуванням `asc`).
-- **Успішна відповідь (`200 OK`):**
-  ```json
-  {
-    "status": 200,
-    "message": "Successfully found textures!",
-    "data": {
-      "data": [
-        {
-          "_id": "690b2236f88b1ba42d4e22b5",
-          "categoryId": {
-            "_id": "690b29a3f88b1ba42d4e22b7",
-            "categoryName": "wood"
-          },
-          "imagesUrls": [],
-          "fileUrl": "some_file_url",
-          "description": "Some description of texture",
-          "textureName": "Name of texture"
-        }
-      ],
-      "page": 1,
-      "perPage": 10,
-      "totalPages": 1,
-      "totalItems": 1,
-      "hasNextPage": false,
-      "hasPreviousPage": false
-    }
-  }
-  ```
+- **Access:** Public
+- **Query Parameters (optional):**
+  - `categoryId` (string): Filters textures by category ID.
+  - `page` (number): Page number for pagination (default `1`).
+  - `perPage` (number): Number of items per page (default `10`).
+  - `sortBy` (string): Field to sort by (`_id`, `textureName`, `createdAt`).
+  - `sortOrder` (string): Sort order (`asc`, `desc`).
 
 #### `GET /textures/:textureId`
 
-Отримує одну текстуру за її унікальним ID.
+Retrieves a single texture by its unique ID.
 
-- **Доступ:** Публічний
-- **Успішна відповідь (`200 OK`):**
-  ```json
-  {
-    "status": 200,
-    "message": "Successfully found texture with id 690b2236f88b1ba42d4e22b5!",
-    "data": {
-      "_id": "690b2236f88b1ba42d4e22b5",
-      "categoryId": {
-        "_id": "690b29a3f88b1ba42d4e22b7",
-        "categoryName": "wood"
-      },
-      "imagesUrls": [],
-      "fileUrl": "some_file_url",
-      "description": "Some description of texture",
-      "textureName": "Name of texture"
-    }
-  }
-  ```
+- **Access:** Public
 
 #### `POST /textures`
 
-Створює нову текстуру.
+Creates a new texture.
 
-- **Доступ:** **Захищений (`X-API-Key` обов'язковий)**
-- **Тіло запиту (Body):**
+- **Access:** **Protected (`X-API-Key` is required)**
+- **Request Body:**
   ```json
   {
-    "textureName": "Моя нова текстура",
-    "description": "Детальний опис.",
-    "categoryId": "690b29a3f88b1ba42d4e22b7",
+    "textureName": "My New Texture",
+    "description": "A detailed description.",
+    "categoryId": "...",
     "imagesUrls": ["http://.../image1.jpg"],
     "fileUrl": "http://.../texture.zip"
-  }
-  ```
-- **Успішна відповідь (`201 Created`):**
-  ```json
-  {
-    "status": 201,
-    "message": "Successfully created a texture!",
-    "data": {
-      "textureName": "Моя нова текстура",
-      "description": "Детальний опис.",
-      "categoryId": "690b29a3f88b1ba42d4e22b7",
-      "imagesUrls": ["http://.../image1.jpg"],
-      "fileUrl": "http://.../texture.zip",
-      "_id": "690b671235b1e1b10b237e78",
-      "createdAt": "...",
-      "updatedAt": "..."
-    }
   }
   ```
 
 #### `PATCH /textures/:textureId`
 
-Частково оновлює існуючу текстуру за її ID.
+Partially updates an existing texture by its ID.
 
-- **Доступ:** **Захищений (`X-API-Key` обов'язковий)**
-- **Тіло запиту (Body):** Будь-який набір полів, які можна змінювати.
-  ```json
-  {
-    "description": "Оновлений опис"
-  }
-  ```
-- **Успішна відповідь (`200 OK`):** Повертає повний, **вже оновлений** об'єкт текстури.
+- **Access:** **Protected (`X-API-Key` is required)**
 
 #### `DELETE /textures/:textureId`
 
-Видаляє текстуру за її ID.
+Deletes a texture by its ID.
 
-- **Доступ:** **Захищений (`X-API-Key` обов'язковий)**
-- **Успішна відповідь (`204 No Content`):** У разі успіху сервер повертає порожню відповідь.
+- **Access:** **Protected (`X-API-Key` is required)**
 
 ---
 
-## Відповіді про помилки
+## Error Responses
 
-- **`400 Bad Request`**: Некоректні дані в тілі запиту (помилка валідації) або невалідний формат ID в URL.
-- **`401 Unauthorized`**: Відсутній або невірний `X-API-Key` для захищених маршрутів.
-- **`404 Not Found`**: Ресурс (текстура, категорія) не знайдено, або запит на неіснуючий маршрут.
-- **`409 Conflict`**: Спроба створити текстуру з `fileUrl`, який вже існує в базі даних.
-- **`500 Internal Server Error`**: Внутрішня помилка сервера.
+- **`400 Bad Request`**: Invalid data in the request body (validation error) or an invalid ID format in the URL.
+- **`401 Unauthorized`**: Missing or incorrect `X-API-Key` for protected routes.
+- **`404 Not Found`**: The requested resource (texture, category) was not found, or the route does not exist.
+- **`409 Conflict`**: Attempt to create a resource with a `fileUrl` (for textures) or `categoryName` (for categories) that already exists in the database.
+- **`500 Internal Server Error`**: An internal server error occurred.
