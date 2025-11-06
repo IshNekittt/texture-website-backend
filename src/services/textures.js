@@ -12,22 +12,26 @@ export const getAllTextures = async (query) => {
   const { sortBy, sortOrder } = parseSortParams(query);
   const filter = parseFilterParams(query);
 
-  const texturesQuery = TextureCollection.find(filter)
+  const totalItems = await TextureCollection.countDocuments(filter);
+  const paginationData = calculatePaginationData(totalItems, page, perPage);
+
+  if (page > paginationData.totalPages && paginationData.totalPages > 0) {
+    return {
+      data: [],
+      ...paginationData,
+      page: paginationData.totalPages,
+    };
+  }
+
+  const data = await TextureCollection.find(filter)
+    .populate('categoryId')
     .sort({ [sortBy]: sortOrder })
     .skip((page - 1) * perPage)
     .limit(perPage)
-    .populate('categoryId')
     .lean();
 
-  const [textures, totalItems] = await Promise.all([
-    texturesQuery.exec(),
-    TextureCollection.countDocuments(filter).exec(),
-  ]);
-
-  const paginationData = calculatePaginationData(totalItems, page, perPage);
-
   return {
-    data: textures,
+    data,
     ...paginationData,
   };
 };

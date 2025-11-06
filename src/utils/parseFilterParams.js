@@ -1,21 +1,15 @@
-const parseObjectId = (id) => {
-  const isString = typeof id === 'string';
-  if (!isString) return;
-
-  const objectIdRegex = /^[0-9a-fA-F]{24}$/;
-  if (objectIdRegex.test(id)) {
-    return id;
-  }
-};
+import { isValidObjectId } from 'mongoose';
 
 export const parseFilterParams = (query) => {
-  const { categoryId } = query;
+  const { categoryId, searchQuery } = query;
   const filter = {};
 
-  const parsedCategoryId = parseObjectId(categoryId);
+  if (categoryId && isValidObjectId(categoryId)) {
+    filter.categoryId = categoryId;
+  }
 
-  if (parsedCategoryId) {
-    filter.categoryId = parsedCategoryId;
+  if (searchQuery) {
+    filter.textureName = { $regex: searchQuery, $options: 'i' };
   }
 
   return filter;
