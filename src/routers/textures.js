@@ -23,6 +23,14 @@ const router = Router();
 router.get('/', ctrlWrapper(getTexturesController));
 
 router.get(
+  '/check-auth',
+  checkApiKey,
+  ctrlWrapper((req, res) => {
+    res.status(200).json({ message: 'API Key is valid' });
+  }),
+);
+
+router.get(
   '/:textureId',
   isValidId('textureId'),
   ctrlWrapper(getTextureByIdController),
